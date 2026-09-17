@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family — SecureGov</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="dashboard.html" class="sidebar-logo">
+      <i class="fas fa-shield-alt"></i> SecureGov
+    </a>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html"  class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+      <a href="documents.html"  class="nav-link"><i class="fas fa-folder-open"></i> Documents</a>
+      <a href="family.html"     class="nav-link active"><i class="fas fa-users"></i> Family</a>
+      <a href="profile.html"    class="nav-link"><i class="fas fa-user"></i> Profile</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar" id="sidebarUserAvatar">?</div>
+        <div class="user-info">
+          <div class="user-name"  id="sidebarUserName">—</div>
+          <div class="user-email" id="sidebarUserEmail"></div>
+        </div>
+      </div>
+      <button class="btn btn-danger-outline btn-sm w-full" id="logoutBtn">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+      <span class="top-bar-title">Family</span>
+      <div class="top-bar-actions">
+        <button class="theme-toggle" id="themeToggle"><i class="fas fa-sun"></i></button>
+      </div>
+    </div>
+
+    <div class="page-body">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Family Groups</h1>
+          <p class="page-subtitle">Manage family members and document sharing</p>
+        </div>
+        <button class="btn btn-primary" id="createGroupBtn">
+          <i class="fas fa-plus"></i> Create Group
+        </button>
+      </div>
+
+      <!-- Received invitations banner -->
+      <div id="receivedBanner" style="display:none;" class="alert alert-info mb-4">
+        <i class="fas fa-envelope"></i>
+        <span id="receivedBannerText">You have pending invitations.</span>
+        <button class="btn btn-sm btn-primary" onclick="scrollToInvitations()">View</button>
+      </div>
+
+      <!-- Family groups -->
+      <div id="groupsList">
+        <div class="empty-state"><span class="spinner spinner-lg"></span></div>
+      </div>
+
+      <!-- Invitations section -->
+      <div id="invitationsSection" style="margin-top:40px;">
+        <div class="section-header">
+          <span class="section-title">Invitations</span>
+        </div>
+        <div id="invitationsList">
+          <div class="empty-state"><span class="spinner"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Group Modal -->
+<div class="modal-overlay" id="createGroupModal">
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <h2 class="modal-title">Create Family Group</h2>
+      <button class="modal-close" onclick="closeModal('createGroupModal')">&times;</button>
+    </div>
+    <form id="createGroupForm" class="modal-body" novalidate>
+      <div class="form-group">
+        <label for="groupName">Group name <span class="text-accent">*</span></label>
+        <input type="text" id="groupName" class="form-control"
+               placeholder="e.g. Sharma Family" required autocomplete="off">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('createGroupModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="createGroupBtn2">
+          <i class="fas fa-plus"></i> Create
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Invite Member Modal -->
+<div class="modal-overlay" id="inviteModal">
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <h2 class="modal-title">Invite Family Member</h2>
+      <button class="modal-close" onclick="closeModal('inviteModal')">&times;</button>
+    </div>
+    <form id="inviteForm" class="modal-body" novalidate>
+      <div class="form-group">
+        <label for="inviteEmail">Email address <span class="text-accent">*</span></label>
+        <input type="email" id="inviteEmail" class="form-control"
+               placeholder="member@example.com" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="inviteRole">Role</label>
+        <select id="inviteRole" class="form-control">
+          <option value="member">Member — can share docs with group</option>
+          <option value="viewer">Viewer — view only</option>
+        </select>
+      </div>
+      <div class="form-hint">
+        An invitation email will be sent. If email is not configured,
+        the invitation link will appear in the server console.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('inviteModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="inviteSubmitBtn">
+          <i class="fas fa-paper-plane"></i> Send Invitation
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Confirm Modal (shared destructive action confirmation) -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <h2 class="modal-title" id="confirmModalTitle">Confirm</h2>
+      <button class="modal-close" id="confirmModalClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirmModalMessage" style="color:var(--text-muted);font-size:14px;line-height:1.6;"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="confirmModalCancelBtn">Cancel</button>
+      <button class="btn btn-danger"    id="confirmModalOkBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
+<script src="../js/firebase-init.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/family.js"></script>
+</body>
+</html>

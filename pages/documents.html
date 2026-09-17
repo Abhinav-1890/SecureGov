@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documents — SecureGov</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <a href="dashboard.html" class="sidebar-logo">
+      <i class="fas fa-shield-alt"></i> SecureGov
+    </a>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html"  class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+      <a href="documents.html"  class="nav-link active"><i class="fas fa-folder-open"></i> Documents</a>
+      <a href="family.html"     class="nav-link"><i class="fas fa-users"></i> Family</a>
+      <a href="profile.html"    class="nav-link"><i class="fas fa-user"></i> Profile</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar" id="sidebarUserAvatar">?</div>
+        <div class="user-info">
+          <div class="user-name"  id="sidebarUserName">—</div>
+          <div class="user-email" id="sidebarUserEmail"></div>
+        </div>
+      </div>
+      <button class="btn btn-danger-outline btn-sm w-full" id="logoutBtn">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="top-bar">
+      <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+      <span class="top-bar-title">Documents</span>
+      <div class="top-bar-actions">
+        <button class="theme-toggle" id="themeToggle"><i class="fas fa-sun"></i></button>
+      </div>
+    </div>
+
+    <div class="page-body">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Documents</h1>
+          <p class="page-subtitle" id="docSubtitle">Loading…</p>
+        </div>
+        <button class="btn btn-primary" id="uploadBtn">
+          <i class="fas fa-upload"></i> Upload Document
+        </button>
+      </div>
+
+      <!-- Stats row -->
+      <div class="stats-grid" style="margin-bottom:24px;">
+        <div class="stat-card">
+          <div class="stat-label">Total Documents</div>
+          <div class="stat-value" id="statTotal">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Storage Used</div>
+          <div class="stat-value" id="statStorage">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Shared With Me</div>
+          <div class="stat-value" id="statShared">—</div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex gap-3 mb-4" style="border-bottom:1px solid var(--border);padding-bottom:0;">
+        <button class="btn btn-ghost btn-sm tab-btn active" data-tab="mine" id="tabMine"
+                style="border-bottom:2px solid var(--accent);border-radius:0;padding-bottom:10px;">
+          My Documents
+        </button>
+        <button class="btn btn-ghost btn-sm tab-btn" data-tab="shared" id="tabShared"
+                style="border-bottom:2px solid transparent;border-radius:0;padding-bottom:10px;">
+          Shared With Me
+        </button>
+      </div>
+
+      <!-- Filter bar (shown for "mine" tab) -->
+      <div class="filter-bar" id="filterBar">
+        <div class="search-wrap form-group" style="margin:0;flex:1;">
+          <i class="fas fa-search"></i>
+          <input type="text" class="form-control" id="searchInput" placeholder="Search documents…">
+        </div>
+        <select class="form-control" id="categoryFilter" style="width:auto;min-width:160px;">
+          <option value="">All Categories</option>
+          <option value="aadhaar">Aadhaar</option>
+          <option value="pan">PAN Card</option>
+          <option value="passport">Passport</option>
+          <option value="driving_license">Driving Licence</option>
+          <option value="marksheet">Marksheet</option>
+          <option value="certificate">Certificate</option>
+          <option value="medical">Medical</option>
+          <option value="financial">Financial</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <!-- Document list -->
+      <div id="docList">
+        <div class="empty-state"><span class="spinner spinner-lg"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title">Upload Document</h2>
+      <button class="modal-close" onclick="closeModal('uploadModal')">&times;</button>
+    </div>
+    <form id="uploadForm" class="modal-body" novalidate>
+      <div class="form-group">
+        <label for="uploadFile">File <span class="text-accent">*</span></label>
+        <input type="file" id="uploadFile" name="file" class="form-control"
+               accept=".pdf,.jpg,.jpeg,.png" required>
+        <span class="form-hint">PDF, JPG, or PNG — max 10 MB</span>
+      </div>
+      <div class="form-group">
+        <label for="uploadTitle">Title <span class="text-accent">*</span></label>
+        <input type="text" id="uploadTitle" name="title" class="form-control"
+               placeholder="e.g. Aadhaar Card" required autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label for="uploadCategory">Category <span class="text-accent">*</span></label>
+        <select id="uploadCategory" name="category" class="form-control" required>
+          <option value="">Select category</option>
+          <option value="aadhaar">Aadhaar</option>
+          <option value="pan">PAN Card</option>
+          <option value="passport">Passport</option>
+          <option value="driving_license">Driving Licence</option>
+          <option value="marksheet">Marksheet</option>
+          <option value="certificate">Certificate</option>
+          <option value="medical">Medical</option>
+          <option value="financial">Financial</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="uploadDesc">Description</label>
+        <textarea id="uploadDesc" name="description" class="form-control"
+                  placeholder="Optional notes…" rows="2"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('uploadModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="uploadSubmitBtn">
+          <i class="fas fa-upload"></i> Upload
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal-overlay" id="shareModal">
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <h2 class="modal-title">Share Document</h2>
+      <button class="modal-close" onclick="closeModal('shareModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="text-sm text-muted mb-4">Share with a family member. They will get read-only access.</p>
+      <div id="shareMemberList">
+        <div class="empty-state"><span class="spinner"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Confirm Modal (shared destructive action confirmation) -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <h2 class="modal-title" id="confirmModalTitle">Confirm</h2>
+      <button class="modal-close" id="confirmModalClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirmModalMessage" style="color:var(--text-muted);font-size:14px;line-height:1.6;"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="confirmModalCancelBtn">Cancel</button>
+      <button class="btn btn-danger"    id="confirmModalOkBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal-overlay" id="previewModal">
+  <div class="modal-box modal-lg" style="display:flex;flex-direction:column;height:88vh;max-height:88vh;padding:0;overflow:hidden;">
+    <div class="modal-header" style="padding:20px 24px;flex-shrink:0;">
+      <h2 class="modal-title" id="previewTitle">Preview</h2>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="modal-close" onclick="closeModal('previewModal')">&times;</button>
+      </div>
+    </div>
+    <!-- Spinner -->
+    <div id="previewSpinner" style="flex:1;display:flex;align-items:center;justify-content:center;">
+      <span class="spinner spinner-lg"></span>
+    </div>
+    <!-- PDF iframe -->
+    <iframe id="previewFrame" style="display:none;flex:1;border:none;width:100%;height:100%;"
+            title="Document preview" allowfullscreen></iframe>
+    <!-- Image preview -->
+    <img id="previewImage" src="" alt=""
+         style="display:none;max-width:100%;max-height:100%;object-fit:contain;margin:auto;padding:16px;">
+    <!-- Error state -->
+    <div id="previewError" style="display:none;padding:24px;color:var(--danger);text-align:center;font-size:14px;"></div>
+  </div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
+<script src="../js/firebase-init.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/documents.js"></script>
+</body>
+</html>
